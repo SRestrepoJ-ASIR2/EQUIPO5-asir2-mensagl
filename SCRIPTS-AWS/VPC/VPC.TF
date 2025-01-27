@@ -1,3 +1,4 @@
+# PLANTILLA PRINCIPAL CREACION DE VPC - EQUIPO5
 provider "aws" {
   region = "us-east-1"
 }
@@ -7,17 +8,17 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-vpc"
+    Name = "vpc-mensagl-2025-equipo5-vpc" # Cambiar nombre al de estudiante, por siguiendo el siguiente formato: vpc-mensagl-2025-nombreAlumno
   }
 }
 
-resource "aws_subnet" "public1" {
+resource "aws_subnet" "public1" { 
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "us-east-1a"
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-subnet-public1-us-east-1a"
+    Name = "vpc-mensagl-2025-equipo5-subnet-public1-us-east-1a"  # Cambiar nombre al de estudiante
   }
 }
 
@@ -27,7 +28,7 @@ resource "aws_subnet" "public2" {
   availability_zone = "us-east-1b"
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-subnet-public2-us-east-1b"
+    Name = "vpc-mensagl-2025-equipo5-subnet-public2-us-east-1b"  # Cambiar nombre al de estudiante
   }
 }
 
@@ -37,7 +38,7 @@ resource "aws_subnet" "private1" {
   availability_zone = "us-east-1a"
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-subnet-private1-us-east-1a"
+    Name = "vpc-mensagl-2025-equipo5-subnet-private1-us-east-1a"  # Cambiar nombre al de estudiante
   }
 }
 
@@ -47,7 +48,7 @@ resource "aws_subnet" "private2" {
   availability_zone = "us-east-1b"
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-subnet-private2-us-east-1b"
+    Name = "vpc-mensagl-2025-equipo5-subnet-private2-us-east-1b"  # Cambiar nombre al de estudiante
   }
 }
 
@@ -55,7 +56,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-igw"
+    Name = "vpc-mensagl-2025-equipo5-igw"  # Cambiar nombre al de estudiante
   }
 }
 
@@ -63,7 +64,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-rtb-public"
+    Name = "vpc-mensagl-2025-equipo5-rtb-public"  # Cambiar nombre al de estudiante
   }
 }
 
@@ -87,7 +88,7 @@ resource "aws_eip" "nat" {
   vpc = true
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-eip-us-east-1a"
+    Name = "vpc-mensagl-2025-equipo5-eip-us-east-1a"  # Cambiar nombre al de estudiante
   }
 }
 
@@ -96,7 +97,7 @@ resource "aws_nat_gateway" "nat" {
   subnet_id     = aws_subnet.public1.id
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-nat-public1-us-east-1a"
+    Name = "vpc-mensagl-2025-equipo5-nat-public1-us-east-1a"  # Cambiar nombre al de estudiante
   }
 }
 
@@ -104,7 +105,7 @@ resource "aws_route_table" "private1" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-rtb-private1-us-east-1a"
+    Name = "vpc-mensagl-2025-equipo5-rtb-private1-us-east-1a"  # Cambiar nombre al de estudiante
   }
 }
 
@@ -123,7 +124,7 @@ resource "aws_route_table" "private2" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-rtb-private2-us-east-1b"
+    Name = "vpc-mensagl-2025-equipo5-rtb-private2-us-east-1b"  # Cambiar nombre al de estudiante
   }
 }
 
