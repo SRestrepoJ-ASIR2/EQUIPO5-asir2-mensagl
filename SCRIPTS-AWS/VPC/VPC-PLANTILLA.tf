@@ -1,10 +1,10 @@
-# PLANTILLA PRINCIPAL CREACION DE VPC - EQUIPO5
+# PLANTILLA PRINCIPAL CREACIÓN DE VPC - EQUIPO5
 provider "aws" {
   region = "us-east-1"
 }
 
 resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
 
   tags = {
@@ -85,8 +85,6 @@ resource "aws_route_table_association" "public2" {
 }
 
 resource "aws_eip" "nat" {
-  vpc = true
-
   tags = {
     Name = "vpc-mensagl-2025-equipo5-eip-us-east-1a"  # Cambiar nombre al de estudiante
   }
