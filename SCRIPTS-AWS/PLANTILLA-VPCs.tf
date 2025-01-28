@@ -1,4 +1,13 @@
 # ============================
+# Variable para nombrar los recursos
+# ============================
+variable "nombre_alumno" {
+  description = "Nombre para nombrar los recursos"
+  type        = string
+  default     = "nombreAlumno"  # Puedes cambiar este valor por defecto o pasarlo al aplicar el plan
+}
+
+# ============================
 # CLAVE SSH
 # ============================
 
@@ -10,14 +19,14 @@ resource "tls_private_key" "ssh_key" {
 
 # Creacion de la clave SSH en AWS
 resource "aws_key_pair" "ssh_key" {
-  key_name   = "ssh-mensagl-2025-nombreAlumno" # Nombre de la clave en AWS
+  key_name   = "ssh-mensagl-2025-${var.nombre_alumno}" # Nombre de la clave en AWS
   public_key = tls_private_key.ssh_key.public_key_openssh
 }
 
 # Guardar la clave privada localmente (No es necesario pero se hace)
 resource "local_file" "private_key_file" {
   content  = tls_private_key.ssh_key.private_key_pem
-  filename = "${path.module}/ssh-mensagl-2025-nombreAlumno.pem" # Nombre del archivo generado
+  filename = "${path.module}/ssh-mensagl-2025-${var.nombre_alumno}.pem" # Nombre del archivo generado
 }
 
 # Salidas para referencia
@@ -29,6 +38,7 @@ output "private_key" {
 output "key_name" {
   value = aws_key_pair.ssh_key.key_name
 }
+
 provider "aws" {
   region = "us-east-1"
 }
@@ -44,7 +54,7 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-vpc"
+    Name = "vpc-mensagl-2025-${var.nombre_alumno}-vpc"
   }
 }
 
@@ -56,7 +66,7 @@ resource "aws_subnet" "public1" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-subnet-public1-us-east-1a"
+    Name = "vpc-mensagl-2025-${var.nombre_alumno}-subnet-public1-us-east-1a"
   }
 }
 
@@ -67,7 +77,7 @@ resource "aws_subnet" "public2" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-subnet-public2-us-east-1b"
+    Name = "vpc-mensagl-2025-${var.nombre_alumno}-subnet-public2-us-east-1b"
   }
 }
 
@@ -78,7 +88,7 @@ resource "aws_subnet" "private1" {
   availability_zone = "us-east-1a"
 
   tags = {
-    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-subnet-private1-us-east-1a"
+    Name = "vpc-mensagl-2025-${var.nombre_alumno}-subnet-private1-us-east-1a"
   }
 }
 
@@ -88,7 +98,7 @@ resource "aws_subnet" "private2" {
   availability_zone = "us-east-1b"
 
   tags = {
-    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-subnet-private2-us-east-1b"
+    Name = "vpc-mensagl-2025-${var.nombre_alumno}-subnet-private2-us-east-1b"
   }
 }
 
@@ -97,7 +107,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-igw"
+    Name = "vpc-mensagl-2025-${var.nombre_alumno}-igw"
   }
 }
 
@@ -111,7 +121,7 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-rtb-public"
+    Name = "vpc-mensagl-2025-${var.nombre_alumno}-rtb-public"
   }
 }
 
@@ -129,10 +139,9 @@ resource "aws_route_table_association" "assoc_public2" {
 # Crear Elastic IP para NAT Gateway
 resource "aws_eip" "nat" {
   tags = {
-    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-eip"
+    Name = "vpc-mensagl-2025-${var.nombre_alumno}-eip"
   }
 }
-
 
 # Crear NAT Gateway
 resource "aws_nat_gateway" "main" {
@@ -140,7 +149,7 @@ resource "aws_nat_gateway" "main" {
   subnet_id     = aws_subnet.public1.id
 
   tags = {
-    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-nat"
+    Name = "vpc-mensagl-2025-${var.nombre_alumno}-nat"
   }
 }
 
@@ -154,7 +163,7 @@ resource "aws_route_table" "private1" {
   }
 
   tags = {
-    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-rtb-private1-us-east-1a"
+    Name = "vpc-mensagl-2025-${var.nombre_alumno}-rtb-private1-us-east-1a"
   }
 }
 
@@ -167,7 +176,7 @@ resource "aws_route_table" "private2" {
   }
 
   tags = {
-    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-rtb-private2-us-east-1b"
+    Name = "vpc-mensagl-2025-${var.nombre_alumno}-rtb-private2-us-east-1b"
   }
 }
 
