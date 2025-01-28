@@ -10,15 +10,8 @@ resource "aws_instance" "proxy_zona1" {
   key_name      = aws_key_pair.ssh_key.key_name
   security_groups = [aws_security_group.sg_proxy.name]
 
-  # User Data para ejecutar un script al iniciar la instancia
-  user_data = <<-EOF
-              #!/bin/bash
-              # Este es un script de ejemplo para el proxy inverso.
-              # Puedes añadir aquí los comandos que necesites.
-              # echo "Configurando el proxy inverso..."
-              # apt-get update
-              # apt-get install -y nginx
-              EOF
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
 
   tags = {
     Name = "proxy-zona1"
@@ -33,14 +26,8 @@ resource "aws_instance" "proxy_zona2" {
   key_name      = aws_key_pair.ssh_key.key_name
   security_groups = [aws_security_group.sg_proxy.name]
 
-  # User Data para ejecutar un script al iniciar la instancia
-  user_data = <<-EOF
-              #!/bin/bash
-              # Este es un script de ejemplo para el proxy inverso.
-              # echo "Configurando el proxy inverso en Zona 2..."
-              # apt-get update
-              # apt-get install -y nginx
-              EOF
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
 
   tags = {
     Name = "proxy-zona2"
@@ -55,14 +42,8 @@ resource "aws_instance" "mensajeria_zona1" {
   key_name      = aws_key_pair.ssh_key.key_name
   security_groups = [aws_security_group.sg_mysql.name]
 
-  # User Data para ejecutar un script al iniciar la instancia
-  user_data = <<-EOF
-              #!/bin/bash
-              # Este es un script de ejemplo para el servidor de mensajería.
-              # echo "Configurando el servidor de mensajería..."
-              # apt-get update
-              # apt-get install -y software-properties-common
-              EOF
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
 
   tags = {
     Name = "mensajeria-zona1"
@@ -77,14 +58,8 @@ resource "aws_instance" "sgbd_zona1" {
   key_name      = aws_key_pair.ssh_key.key_name
   security_groups = [aws_security_group.sg_mysql.name]
 
-  # User Data para ejecutar un script al iniciar la instancia
-  user_data = <<-EOF
-              #!/bin/bash
-              # Este es un script de ejemplo para el servidor SGBD.
-              # echo "Configurando el servidor SGBD..."
-              # apt-get update
-              # apt-get install -y mysql-server
-              EOF
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
 
   tags = {
     Name = "sgbd-zona1"
@@ -99,14 +74,8 @@ resource "aws_instance" "cms_zona2" {
   key_name      = aws_key_pair.ssh_key.key_name
   security_groups = [aws_security_group.sg_cms.name]
 
-  # User Data para ejecutar un script al iniciar la instancia
-  user_data = <<-EOF
-              #!/bin/bash
-              # Este es un script de ejemplo para el clúster de CMS.
-              # echo "Configurando el clúster de CMS..."
-              # apt-get update
-              # apt-get install -y apache2
-              EOF
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
 
   tags = {
     Name = "cms-zona2"
@@ -121,14 +90,8 @@ resource "aws_instance" "sgbd_zona2" {
   key_name      = aws_key_pair.ssh_key.key_name
   security_groups = [aws_security_group.sg_mysql.name]
 
-  # User Data para ejecutar un script al iniciar la instancia
-  user_data = <<-EOF
-              #!/bin/bash
-              # Este es un script de ejemplo para el servidor SGBD.
-              # echo "Configurando el servidor SGBD en Zona 2..."
-              # apt-get update
-              # apt-get install -y mysql-server
-              EOF
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
 
   tags = {
     Name = "sgbd-zona2"
