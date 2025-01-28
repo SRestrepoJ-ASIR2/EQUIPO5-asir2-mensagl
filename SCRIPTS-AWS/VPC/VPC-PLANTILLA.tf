@@ -1,44 +1,80 @@
-# PLANTILLA PRINCIPAL CREACIÓN DE VPC - EQUIPO5
+# ============================
+# CLAVE SSH
+# ============================
+
+# Generacion de la clave SSH
+resource "tls_private_key" "ssh_key" {
+  algorithm = "RSA"      # Algoritmo para la clave
+  rsa_bits  = 2048       # Tamaño de la clave en bits
+}
+
+# Creacion de la clave SSH en AWS
+resource "aws_key_pair" "ssh_key" {
+  key_name   = "ssh-mensagl-2025-nombreAlumno" # Nombre de la clave en AWS
+  public_key = tls_private_key.ssh_key.public_key_openssh
+}
+
+# Guardar la clave privada localmente (No es necesario pero se hace)
+resource "local_file" "private_key_file" {
+  content  = tls_private_key.ssh_key.private_key_pem
+  filename = "${path.module}/ssh-mensagl-2025-nombreAlumno.pem" # Nombre del archivo generado
+}
+
+# Salidas para referencia
+output "private_key" {
+  value     = tls_private_key.ssh_key.private_key_pem
+  sensitive = true # Mantener la clave privada oculta en los logs
+}
+
+output "key_name" {
+  value = aws_key_pair.ssh_key.key_name
+}
 provider "aws" {
   region = "us-east-1"
 }
 
+# Crear VPC
 resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/16"
+  cidr_block = "10.0.0.0/16"
+  enable_dns_support = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-vpc" # Cambiar nombre al de estudiante, por siguiendo el siguiente formato: vpc-mensagl-2025-nombreAlumno
+    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-vpc"
   }
 }
 
-resource "aws_subnet" "public1" { 
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-east-1a"
+# Crear Subnets públicas
+resource "aws_subnet" "public1" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "us-east-1a"
+  map_public_ip_on_launch = true
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-subnet-public1-us-east-1a"  # Cambiar nombre al de estudiante
+    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-subnet-public1-us-east-1a"
   }
 }
 
 resource "aws_subnet" "public2" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = "us-east-1b"
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.2.0/24"
+  availability_zone       = "us-east-1b"
+  map_public_ip_on_launch = true
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-subnet-public2-us-east-1b"  # Cambiar nombre al de estudiante
+    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-subnet-public2-us-east-1b"
   }
 }
 
+# Crear Subnets privadas
 resource "aws_subnet" "private1" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.3.0/24"
   availability_zone = "us-east-1a"
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-subnet-private1-us-east-1a"  # Cambiar nombre al de estudiante
+    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-subnet-private1-us-east-1a"
   }
 }
 
@@ -48,91 +84,96 @@ resource "aws_subnet" "private2" {
   availability_zone = "us-east-1b"
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-subnet-private2-us-east-1b"  # Cambiar nombre al de estudiante
+    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-subnet-private2-us-east-1b"
   }
 }
 
-resource "aws_internet_gateway" "igw" {
+# Crear Gateway de Internet
+resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-igw"  # Cambiar nombre al de estudiante
+    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-igw"
   }
 }
 
+# Crear tabla de rutas publicas
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-rtb-public"  # Cambiar nombre al de estudiante
+    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-rtb-public"
   }
 }
 
-resource "aws_route" "internet_access" {
-  route_table_id         = aws_route_table.public.id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.igw.id
-}
-
-resource "aws_route_table_association" "public1" {
+# Asociar subnets públicas a la tabla de rutas pública
+resource "aws_route_table_association" "assoc_public1" {
   subnet_id      = aws_subnet.public1.id
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "public2" {
+resource "aws_route_table_association" "assoc_public2" {
   subnet_id      = aws_subnet.public2.id
   route_table_id = aws_route_table.public.id
 }
 
+# Crear Elastic IP para NAT Gateway
 resource "aws_eip" "nat" {
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-eip-us-east-1a"  # Cambiar nombre al de estudiante
+    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-eip"
   }
 }
 
-resource "aws_nat_gateway" "nat" {
+
+# Crear NAT Gateway
+resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public1.id
 
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-nat-public1-us-east-1a"  # Cambiar nombre al de estudiante
+    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-nat"
   }
 }
 
+# Crear tablas de rutas privadas
 resource "aws_route_table" "private1" {
   vpc_id = aws_vpc.main.id
 
-  tags = {
-    Name = "vpc-mensagl-2025-equipo5-rtb-private1-us-east-1a"  # Cambiar nombre al de estudiante
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.main.id
   }
-}
 
-resource "aws_route" "private_route1" {
-  route_table_id         = aws_route_table.private1.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat.id
-}
-
-resource "aws_route_table_association" "private1_association" {
-  subnet_id      = aws_subnet.private1.id
-  route_table_id = aws_route_table.private1.id
+  tags = {
+    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-rtb-private1-us-east-1a"
+  }
 }
 
 resource "aws_route_table" "private2" {
   vpc_id = aws_vpc.main.id
 
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.main.id
+  }
+
   tags = {
-    Name = "vpc-mensagl-2025-equipo5-rtb-private2-us-east-1b"  # Cambiar nombre al de estudiante
+    Name = "vpc-mensagl-2025-NOMBRE-ALUMNO-rtb-private2-us-east-1b"
   }
 }
 
-resource "aws_route" "private_route2" {
-  route_table_id         = aws_route_table.private2.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat.id
+# Asociar subnets privadas a las tablas de rutas privadas
+resource "aws_route_table_association" "assoc_private1" {
+  subnet_id      = aws_subnet.private1.id
+  route_table_id = aws_route_table.private1.id
 }
 
-resource "aws_route_table_association" "private2_association" {
+resource "aws_route_table_association" "assoc_private2" {
   subnet_id      = aws_subnet.private2.id
   route_table_id = aws_route_table.private2.id
 }
