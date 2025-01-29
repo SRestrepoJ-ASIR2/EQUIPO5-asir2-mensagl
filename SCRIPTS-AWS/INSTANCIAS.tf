@@ -46,6 +46,9 @@ resource "aws_launch_template" "mensajeria_zona1" {
   key_name      = aws_key_pair.ssh_key.key_name
   vpc_security_group_ids = [aws_security_group.sg_mensajeria.id]
 
+  # User Data para clusteres (comentado)
+  # user_data = file("script.sh")
+
   tag_specifications {
     resource_type = "instance"
     tags = {
@@ -99,6 +102,9 @@ resource "aws_launch_template" "cms_zona2" {
   key_name      = aws_key_pair.ssh_key.key_name
   vpc_security_group_ids = [aws_security_group.sg_cms.id]
 
+  # User Data para clusteres (comentado)
+  # user_data = file("script.sh")
+
   tag_specifications {
     resource_type = "instance"
     tags = {
@@ -126,6 +132,7 @@ resource "aws_autoscaling_group" "cluster_cms" {
     propagate_at_launch = true
   }
 }
+
 # Servidor SGBD en Zona 2
 resource "aws_instance" "sgbd_zona2" {
   ami                    = "ami-04b4f1a9cf54c11d0"
