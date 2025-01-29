@@ -4,7 +4,7 @@
 variable "nombre_alumno" {
   description = "Nombre para nombrar los recursos"
   type        = string
-  default     = "nombreAlumno"  # Puedes cambiar este valor por defecto o pasarlo al aplicar el plan
+  default     = "nombreAlumno"  # Cambiar al nombre del estudiante
 }
 
 # ============================
@@ -312,7 +312,7 @@ resource "aws_security_group" "sg_mysql" {
   }
 }
 
-# Grupo de seguridad para Mensajería (XMPP Openfire + MySQL)
+# Grupo de seguridad para Mensajeria (XMPP Openfire + MySQL)
 resource "aws_security_group" "sg_mensajeria" {
   name        = "sg_mensajeria"
   description = "Security group for XMPP Openfire and MySQL"
@@ -349,7 +349,7 @@ resource "aws_security_group" "sg_mensajeria" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Tráfico de salida
+  # Trafico de salida
   egress {
     from_port   = 0
     to_port     = 0

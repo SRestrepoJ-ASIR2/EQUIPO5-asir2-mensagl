@@ -38,7 +38,7 @@ resource "aws_instance" "proxy_zona2" {
 # Auto Scaling Groups para Clústeres
 # ============================
 
-# Plantilla de lanzamiento para el Clúster de Mensajería en Zona 1
+# Plantilla de lanzamiento para el Cluster de Mensajería en Zona 1
 resource "aws_launch_template" "mensajeria_zona1" {
   name_prefix   = "mensajeria-zona1-"
   image_id      = "ami-04b4f1a9cf54c11d0"
@@ -54,7 +54,7 @@ resource "aws_launch_template" "mensajeria_zona1" {
   }
 }
 
-# Auto Scaling Group para el Clúster de Mensajería (2 instancias en Zona 1)
+# Auto Scaling Group para el Cluster de Mensajería (2 instancias en Zona 1)
 resource "aws_autoscaling_group" "cluster_mensajeria" {
   name             = "cluster-mensajeria-zona1"
   desired_capacity = 2
@@ -91,7 +91,7 @@ resource "aws_instance" "sgbd_zona1" {
 }
 
 
-# Plantilla de lanzamiento para el Clúster de CMS en Zona 2
+# Plantilla de lanzamiento para el Cluster de CMS en Zona 2
 resource "aws_launch_template" "cms_zona2" {
   name_prefix   = "cms-zona2-"
   image_id      = "ami-04b4f1a9cf54c11d0"
@@ -107,7 +107,7 @@ resource "aws_launch_template" "cms_zona2" {
   }
 }
 
-# Auto Scaling Group para el Clúster de CMS (2 instancias en Zona 2)
+# Auto Scaling Group para el Cluster de CMS (2 instancias en Zona 2)
 resource "aws_autoscaling_group" "cluster_cms" {
   name             = "cluster-cms-zona2"
   desired_capacity = 2
