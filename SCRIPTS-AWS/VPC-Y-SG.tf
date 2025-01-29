@@ -311,3 +311,53 @@ resource "aws_security_group" "sg_mysql" {
     Name = "sg_mysql"
   }
 }
+
+# Grupo de seguridad para Mensajería (XMPP Openfire + MySQL)
+resource "aws_security_group" "sg_mensajeria" {
+  name        = "sg_mensajeria"
+  description = "Security group for XMPP Openfire and MySQL"
+  vpc_id      = aws_vpc.main.id
+
+  # SSH
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # XMPP Openfire (puertos predeterminados)
+  ingress {
+    from_port   = 5222
+    to_port     = 5222
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 9090
+    to_port     = 9091
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # MySQL
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Tráfico de salida
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "sg_mensajeria"
+  }
+}

@@ -10,6 +10,9 @@ resource "aws_instance" "proxy_zona1" {
   key_name               = aws_key_pair.ssh_key.key_name
   vpc_security_group_ids = [aws_security_group.sg_proxy.id]
 
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
+
   tags = {
     Name = "proxy-zona1"
   }
@@ -23,6 +26,9 @@ resource "aws_instance" "proxy_zona2" {
   key_name               = aws_key_pair.ssh_key.key_name
   vpc_security_group_ids = [aws_security_group.sg_proxy.id]
 
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
+
   tags = {
     Name = "proxy-zona2"
   }
@@ -34,7 +40,10 @@ resource "aws_instance" "mensajeria_zona1" {
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.private1.id
   key_name               = aws_key_pair.ssh_key.key_name
-  vpc_security_group_ids = [aws_security_group.sg_mysql.id]
+  vpc_security_group_ids = [aws_security_group.sg_mensajeria.id]
+
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
 
   tags = {
     Name = "mensajeria-zona1"
@@ -49,6 +58,9 @@ resource "aws_instance" "sgbd_zona1" {
   key_name               = aws_key_pair.ssh_key.key_name
   vpc_security_group_ids = [aws_security_group.sg_mysql.id]
 
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
+
   tags = {
     Name = "sgbd-zona1"
   }
@@ -62,6 +74,9 @@ resource "aws_instance" "cms_zona2" {
   key_name               = aws_key_pair.ssh_key.key_name
   vpc_security_group_ids = [aws_security_group.sg_cms.id]
 
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
+
   tags = {
     Name = "cms-zona2"
   }
@@ -74,6 +89,9 @@ resource "aws_instance" "sgbd_zona2" {
   subnet_id              = aws_subnet.private2.id
   key_name               = aws_key_pair.ssh_key.key_name
   vpc_security_group_ids = [aws_security_group.sg_mysql.id]
+
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
 
   tags = {
     Name = "sgbd-zona2"
