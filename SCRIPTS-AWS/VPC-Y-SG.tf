@@ -13,26 +13,26 @@ variable "nombre_alumno" {
 
 # Generacion de la clave SSH
 resource "tls_private_key" "ssh_key" {
-  algorithm = "RSA"      # Algoritmo para la clave
-  rsa_bits  = 2048       # Tamaño de la clave en bits
+  algorithm = "RSA"
+  rsa_bits  = 2048
 }
 
 # Creacion de la clave SSH en AWS
 resource "aws_key_pair" "ssh_key" {
-  key_name   = "ssh-mensagl-2025-${var.nombre_alumno}" # Nombre de la clave en AWS
+  key_name   = "ssh-mensagl-2025-${var.nombre_alumno}"
   public_key = tls_private_key.ssh_key.public_key_openssh
 }
 
-# Guardar la clave privada localmente (No es necesario pero se hace)
+# Guardar la clave privada localmente
 resource "local_file" "private_key_file" {
   content  = tls_private_key.ssh_key.private_key_pem
-  filename = "${path.module}/ssh-mensagl-2025-${var.nombre_alumno}.pem" # Nombre del archivo generado
+  filename = "${path.module}/ssh-mensagl-2025-${var.nombre_alumno}.pem"
 }
 
 # Salidas para referencia
 output "private_key" {
   value     = tls_private_key.ssh_key.private_key_pem
-  sensitive = true # Mantener la clave privada oculta en los logs
+  sensitive = true
 }
 
 output "key_name" {
@@ -49,8 +49,8 @@ provider "aws" {
 
 # Crear VPC
 resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
-  enable_dns_support = true
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
@@ -111,7 +111,7 @@ resource "aws_internet_gateway" "main" {
   }
 }
 
-# Crear tabla de rutas publicas
+# Crear tabla de rutas públicas
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -158,7 +158,7 @@ resource "aws_route_table" "private1" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.main.id
   }
 
@@ -171,7 +171,7 @@ resource "aws_route_table" "private2" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.main.id
   }
 
@@ -189,4 +189,125 @@ resource "aws_route_table_association" "assoc_private1" {
 resource "aws_route_table_association" "assoc_private2" {
   subnet_id      = aws_subnet.private2.id
   route_table_id = aws_route_table.private2.id
+}
+
+# ============================
+# Grupos de Seguridad
+# ============================
+
+# Grupo de seguridad para los Proxy Inversos
+resource "aws_security_group" "sg_proxy" {
+  name        = "sg_proxy_inverso"
+  description = "Security group for reverse proxy servers"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 8448
+    to_port     = 8448
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "sg_proxy_inverso"
+  }
+}
+
+# Grupo de seguridad para el CMS
+resource "aws_security_group" "sg_cms" {
+  name        = "sg_cms"
+  description = "Security group for CMS cluster"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 33060
+    to_port     = 33060
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "sg_cms"
+  }
+}
+
+# Grupo de seguridad para MySQL
+resource "aws_security_group" "sg_mysql" {
+  name        = "sg_mysql"
+  description = "Security group for MySQL servers"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "sg_mysql"
+  }
 }
