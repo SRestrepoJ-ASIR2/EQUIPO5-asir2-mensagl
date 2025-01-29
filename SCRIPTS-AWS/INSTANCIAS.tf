@@ -35,7 +35,7 @@ resource "aws_instance" "proxy_zona2" {
 }
 
 # ============================
-# Auto Scaling Groups para Clústeres
+# Auto Scaling Groups para Clusteres
 # ============================
 
 # Plantilla de lanzamiento para el Cluster de Mensajería en Zona 1
