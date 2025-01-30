@@ -74,49 +74,57 @@ resource "aws_instance" "sgbd-secundario_zona1" {
 }
 
 # ============================
-# Auto Scaling Groups para Clusteres
+#  Clusteres y RDS
 # ============================
 
-# Plantilla de lanzamiento para el Cluster de Mensajería en Zona 1
-resource "aws_launch_template" "mensajeria_zona1" {
-  name_prefix   = "mensajeria-zona1-"
-  image_id      = "ami-04b4f1a9cf54c11d0"
-  instance_type = "t2.micro"
-  key_name      = aws_key_pair.ssh_key.key_name
+# Instancia Mensajería 1 en Zona 1
+resource "aws_instance" "mensajeria_1" {
+  ami                    = "ami-04b4f1a9cf54c11d0"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.private1.id  # Subred privada en Zona 1
+  key_name               = aws_key_pair.ssh_key.key_name
   vpc_security_group_ids = [aws_security_group.sg_mensajeria.id]
+  private_ip             = "10.0.3.20"  # IP privada fija
 
-  # User Data para clusteres (comentado)
+  # User Data para cargar el script.sh (comentado de momento)
   # user_data = file("script.sh")
 
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      Name = "mensajeria-zona1"
-    }
+  tags = {
+    Name = "mensajeria-1"
   }
 }
 
-# Auto Scaling Group para el Cluster de Mensajería (2 instancias en Zona 1)
-resource "aws_autoscaling_group" "cluster_mensajeria" {
-  name             = "cluster-mensajeria-zona1"
-  desired_capacity = 2
-  min_size         = 2
-  max_size         = 2
-  vpc_zone_identifier = [aws_subnet.private1.id]
+# Instancia Mensajería 2 en Zona 1
+resource "aws_instance" "mensajeria_2" {
+  ami                    = "ami-04b4f1a9cf54c11d0"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.private1.id  # Subred privada en Zona 1
+  key_name               = aws_key_pair.ssh_key.key_name
+  vpc_security_group_ids = [aws_security_group.sg_mensajeria.id]
+  private_ip             = "10.0.3.30"  # IP privada fija
 
-  launch_template {
-    id      = aws_launch_template.mensajeria_zona1.id
-    version = "$Latest"
-  }
 
-  tag {
-    key                 = "Name"
-    value               = "mensajeria-cluster"
-    propagate_at_launch = true
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
+
+  tags = {
+    Name = "mensajeria-2"
   }
 }
+
 
 # instancia RDS - para CMS
+# Subnet Group para RDS (solo subred privada 4 - 10.0.4.0/24)
+resource "aws_db_subnet_group" "cms_subnet_group" {
+  name       = "cms-db-subnet-group"
+  subnet_ids = [aws_subnet.private2.id]  # Subnet private2 = 10.0.4.0/24
+
+  tags = {
+    Name = "cms-db-subnet-group"
+  }
+}
+
+# Instancia RDS - para CMS
 resource "aws_db_instance" "cms_database" {
   allocated_storage    = 20
   storage_type         = "gp2"
@@ -128,9 +136,12 @@ resource "aws_db_instance" "cms_database" {
   db_name              = "cmsdb"
   publicly_accessible  = false
   multi_az             = false
-  availability_zone    = "us-east-1a"
+  availability_zone    = "us-east-1b"  # Zona de la subred private2 (10.0.4.0/24)
   db_subnet_group_name = aws_db_subnet_group.cms_subnet_group.name
   vpc_security_group_ids = [aws_security_group.sg_mysql.id]
+
+  # IP persistente (AWS asignará dentro de la subred)
+  skip_final_snapshot  = true  # Solo para entornos de prueba
 
   tags = {
     Name = "cms-db"
@@ -139,92 +150,66 @@ resource "aws_db_instance" "cms_database" {
   depends_on = [aws_db_subnet_group.cms_subnet_group]
 }
 
-# Subnet Group para RDS
-resource "aws_db_subnet_group" "cms_subnet_group" {
-  name       = "cms-db-subnet-group"
-  subnet_ids = [aws_subnet.private1.id, aws_subnet.private2.id]
-
-  tags = {
-    Name = "cms-db-subnet-group"
-  }
-}
-
-
-# Plantilla de lanzamiento para el Cluster de CMS en Zona 2
-resource "aws_launch_template" "cms_zona2" {
-  name_prefix   = "cms-zona2-"
-  image_id      = "ami-04b4f1a9cf54c11d0"
-  instance_type = "t2.micro"
-  key_name      = aws_key_pair.ssh_key.key_name
+# Cluster de CMS (2 instancias en Zona 2)
+resource "aws_instance" "cms_cluster_1" {
+  ami                    = "ami-04b4f1a9cf54c11d0"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.private2.id
+  key_name               = aws_key_pair.ssh_key.key_name
   vpc_security_group_ids = [aws_security_group.sg_cms.id]
+  private_ip             = "10.0.4.10"  # IP privada fija
 
-  # User Data para clusteres (comentado)
-  # user_data = file("script.sh")
-
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      Name = "cms-zona2"
-    }
-  }
-}
-
-# Auto Scaling Group para el Cluster de CMS (2 instancias en Zona 2)
-resource "aws_autoscaling_group" "cluster_cms" {
-  name             = "cluster-cms-zona2"
-  desired_capacity = 2
-  min_size         = 2
-  max_size         = 2
-  vpc_zone_identifier = [aws_subnet.private2.id]
-
-  launch_template {
-    id      = aws_launch_template.cms_zona2.id
-    version = "$Latest"
-  }
-
-  tag {
-    key                 = "Name"
-    value               = "cms-cluster"
-    propagate_at_launch = true
-  }
-}
-
-# Launch Template para Jitsi en Zona 1
-resource "aws_launch_template" "jitsi_zona1" {
-  name_prefix   = "jitsi-zona1-"
-  image_id      = "ami-04b4f1a9cf54c11d0"  
-  instance_type = "t2.micro"
-  key_name      = aws_key_pair.ssh_key.key_name
-  vpc_security_group_ids = [aws_security_group.sg_jitsi.id] 
-  
   # User Data para cargar el script.sh (comentado de momento)
   # user_data = file("script.sh")
 
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      Name = "jitsi-zona1"
-    }
+  tags = {
+    Name = "cms-cluster-1"
   }
 }
 
-# Auto Scaling Group para el Cluster de Jitsi (2 instancias en Zona 1)
-resource "aws_autoscaling_group" "cluster_jitsi" {
-  name             = "cluster-jitsi-zona1"
-  desired_capacity = 2
-  min_size         = 2
-  max_size         = 2
-  vpc_zone_identifier = [aws_subnet.private1.id]
+resource "aws_instance" "cms_cluster_2" {
+  ami                    = "ami-04b4f1a9cf54c11d0"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.private2.id
+  key_name               = aws_key_pair.ssh_key.key_name
+  vpc_security_group_ids = [aws_security_group.sg_cms.id]
+  private_ip             = "10.0.4.11"  # IP privada fija
 
-  launch_template {
-    id      = aws_launch_template.jitsi_zona1.id
-    version = "$Latest"
-  }
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
 
-  tag {
-    key                 = "Name"
-    value               = "jitsi-cluster"
-    propagate_at_launch = true
+  tags = {
+    Name = "cms-cluster-2"
   }
 }
+# Cluster de Jiti (2 instancias en Zona 1) - para videollamadas
+resource "aws_instance" "jitsi_cluster1" {
+  ami                    = "ami-04b4f1a9cf54c11d0"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.private1.id  
+  key_name               = aws_key_pair.ssh_key.key_name
+  vpc_security_group_ids = [aws_security_group.sg_jitsi.id]
+  private_ip             = "10.0.3.12"  # IP fija para la primer instancia
 
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
+
+  tags = {
+    Name = "jitsi-cluster-1"
+  }
+}
+resource "aws_instance" "jitsi_cluster2" {
+  ami                    = "ami-04b4f1a9cf54c11d0"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.private1.id 
+  key_name               = aws_key_pair.ssh_key.key_name
+  vpc_security_group_ids = [aws_security_group.sg_jitsi.id]
+  private_ip             = "10.0.3.13"  #  IP fija para la segunda instancia
+
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
+
+  tags = {
+    Name = "jitsi-cluster-2"
+  }
+}

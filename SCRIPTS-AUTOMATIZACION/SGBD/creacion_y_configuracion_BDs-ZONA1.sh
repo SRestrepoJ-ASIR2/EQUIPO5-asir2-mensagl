@@ -44,7 +44,7 @@ if [ "$(hostname)" == "sgbd-principal_zona1" ]; then
     echo "Binlog Position: ${BINLOG_POS}"
 fi
 
-# Configurar la base de datos secundaria (réplica)
+# Configurar la base de datos secundaria (replica)
 if [ "$(hostname)" == "sgbd-secundario_zona1" ]; then
     # Detener la replicacion si ya está configurada
     mysql -u root -e "STOP SLAVE;"
@@ -57,5 +57,5 @@ if [ "$(hostname)" == "sgbd-secundario_zona1" ]; then
     SLAVE_STATUS=$(mysql -u root -e "SHOW SLAVE STATUS\G")
     echo "$SLAVE_STATUS"
 
-    echo "Configuración de la base de datos secundaria (réplica) completada."
+    echo "Configuración de la base de datos secundaria (replica) completada."
 fi
