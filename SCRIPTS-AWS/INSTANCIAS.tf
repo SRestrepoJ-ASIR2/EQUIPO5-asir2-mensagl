@@ -50,7 +50,7 @@ resource "aws_instance" "sgbd-principal_zona1" {
   private_ip             = "10.0.3.10"
 
   # User Data para cargar el script.sh (comentado de momento)
-  # user_data = file("script.sh")
+  # ser_data = file("\SCRIPTS-AUTOMATIZACION\SGBD\creacion_y_configuracion_BDs-ZONA1.sh")
 
   tags = {
     Name = "sgbd-principal_zona1"
@@ -128,7 +128,7 @@ resource "aws_db_subnet_group" "cms_subnet_group" {
 resource "aws_db_instance" "cms_database" {
   allocated_storage    = 20
   storage_type         = "gp2"
-  instance_class       = "db.t3.micro"
+  instance_class       = "db.t3.medium"
   engine               = "mysql"
   engine_version       = "8.0"
   username             = "admin"
@@ -182,7 +182,7 @@ resource "aws_instance" "cms_cluster_2" {
     Name = "cms-cluster-2"
   }
 }
-# Cluster de Jiti (2 instancias en Zona 1) - para videollamadas
+# Jiti - para videollamadas
 resource "aws_instance" "jitsi_cluster1" {
   ami                    = "ami-04b4f1a9cf54c11d0"
   instance_type          = "t2.micro"
@@ -195,21 +195,6 @@ resource "aws_instance" "jitsi_cluster1" {
   # user_data = file("script.sh")
 
   tags = {
-    Name = "jitsi-cluster-1"
-  }
-}
-resource "aws_instance" "jitsi_cluster2" {
-  ami                    = "ami-04b4f1a9cf54c11d0"
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.private1.id 
-  key_name               = aws_key_pair.ssh_key.key_name
-  vpc_security_group_ids = [aws_security_group.sg_jitsi.id]
-  private_ip             = "10.0.3.13"  #  IP fija para la segunda instancia
-
-  # User Data para cargar el script.sh (comentado de momento)
-  # user_data = file("script.sh")
-
-  tags = {
-    Name = "jitsi-cluster-2"
+    Name = "jitsi-zona1"
   }
 }
