@@ -38,7 +38,6 @@ resource "aws_instance" "proxy_zona2" {
   }
 }
 
-
 # Servidores SGBD en Zona 1
 # Principal
 resource "aws_instance" "sgbd-principal_zona1" {
@@ -53,7 +52,12 @@ resource "aws_instance" "sgbd-principal_zona1" {
   user_data = base64encode(templatefile("${path.module}/SCRIPTS-AUTOMATIZACION/SGBD/creacion_y_configuracion_BDs-ZONA1.sh", {
     role           = "primary",          # Rol: primary
     primary_ip     = "10.0.3.10",        # IP del primario
-    secondary_ip   = "10.0.3.11"         # IP del secundario
+    secondary_ip   = "10.0.3.11",        # IP del secundario
+    db_user        = "admin",            # Usuario de la base de datos
+    db_password    = "Admin123",         # Contraseña del usuario
+    db_name        = "prosody",          # Nombre de la base de datos
+    repl_user      = "replica_user",     # Usuario de replicación
+    repl_password  = "Admin123"          # Contraseña de replicación
   }))
 
   tags = {
@@ -74,7 +78,12 @@ resource "aws_instance" "sgbd-secundario_zona1" {
   user_data = base64encode(templatefile("${path.module}/SCRIPTS-AUTOMATIZACION/SGBD/creacion_y_configuracion_BDs-ZONA1.sh", {
     role           = "secondary",        # Rol: secondary
     primary_ip     = "10.0.3.10",        # IP del primario
-    secondary_ip   = "10.0.3.11"         # IP del secundario
+    secondary_ip   = "10.0.3.11",        # IP del secundario
+    db_user        = "admin",            # Usuario de la base de datos
+    db_password    = "Admin123",         # Contraseña del usuario
+    db_name        = "prosody",          # Nombre de la base de datos
+    repl_user      = "replica_user",     # Usuario de replicación
+    repl_password  = "Admin123"          # Contraseña de replicación
   }))
 
   tags = {
@@ -121,42 +130,44 @@ resource "aws_instance" "mensajeria_2" {
   }
 }
 
-# RDS
-# Subnet Group para RDS (solo subred privada 4 - 10.0.4.0/24)
-resource "aws_db_subnet_group" "cms_subnet_group" {
-  name       = "cms-db-subnet-group"
-  subnet_ids = [aws_subnet.private2.id]  # Subnet private2 = 10.0.4.0/24
+# APARTADO RDS
 
-  tags = {
-    Name = "cms-db-subnet-group"
-  }
-}
+# # RDS
+# # Grupo de subredes para RDS 
+# resource "aws_db_subnet_group" "cms_subnet_group" {
+#   name       = "cms-db-subnet-group"
+#   subnet_ids = [aws_subnet.private1.id, aws_subnet.private2.id]  # Subnets en 2 AZs
 
-# Instancia RDS - para CMS
-resource "aws_db_instance" "cms_database" {
-  allocated_storage    = 20
-  storage_type         = "gp2"
-  instance_class       = "db.t3.medium"
-  engine               = "mysql"
-  engine_version       = "8.0"
-  username             = "admin"
-  password             = "Admin123"
-  db_name              = "wordpress-db"
-  publicly_accessible  = false
-  multi_az             = true
-  availability_zone    = "us-east-1b"  # Zona de la subred private2 (10.0.4.0/24)
-  db_subnet_group_name = aws_db_subnet_group.cms_subnet_group.name
-  vpc_security_group_ids = [aws_security_group.sg_mysql.id]
+#   tags = {
+#     Name = "cms-db-subnet-group"
+#   }
+# }
 
-  # IP persistente (AWS asignará dentro de la subred)
-  skip_final_snapshot  = true  # Solo para entornos de prueba
+# # Instancia RDS - para CMS
+# resource "aws_db_instance" "cms_database" {
+#   allocated_storage    = 20
+#   storage_type         = "gp2"
+#   instance_class       = "db.t3.medium"
+#   engine               = "mysql"
+#   engine_version       = "8.0"
+#   username             = "admin"
+#   password             = "Admin123"
+#   db_name              = "wordpress_db"
+#   publicly_accessible  = false
+#   multi_az             = false
+#   availability_zone    = "us-east-1b"  
+#   db_subnet_group_name = aws_db_subnet_group.cms_subnet_group.name
+#   vpc_security_group_ids = [aws_security_group.sg_mysql.id]
 
-  tags = {
-    Name = "wordpress-db"
-  }
+#   skip_final_snapshot  = true  # PRUEBAS LUEGO ELIMINAR
+#   tags = {
+#     Name = "wordpress_db"
+#   }
+#   # identificador a la instancia de la base de datos
+#   identifier = "cms-database" 
 
-  depends_on = [aws_db_subnet_group.cms_subnet_group]
-}
+#   depends_on = [aws_db_subnet_group.cms_subnet_group]
+# }
 
 # Cluster de CMS (2 instancias en Zona 2)
 resource "aws_instance" "cms_cluster_1" {
