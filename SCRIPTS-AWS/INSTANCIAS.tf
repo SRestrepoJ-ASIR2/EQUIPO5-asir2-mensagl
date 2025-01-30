@@ -148,39 +148,6 @@ resource "aws_autoscaling_group" "cluster_cms" {
   }
 }
 
-# Servidores SGBD en Zona 2
-# Principal
-resource "aws_instance" "sgbd-principal_zona2" {
-  ami                    = "ami-04b4f1a9cf54c11d0"
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.private2.id
-  key_name               = aws_key_pair.ssh_key.key_name
-  vpc_security_group_ids = [aws_security_group.sg_mysql.id]
-
-  # User Data para cargar el script.sh (comentado de momento)
-  # user_data = file("script.sh")
-
-  tags = {
-    Name = "sgbd-principal_zona2"
-  }
-}
-
-# Secundario
-resource "aws_instance" "sgbd-secundario_zona2" {
-  ami                    = "ami-04b4f1a9cf54c11d0"
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.private2.id
-  key_name               = aws_key_pair.ssh_key.key_name
-  vpc_security_group_ids = [aws_security_group.sg_mysql.id]
-
-  # User Data para cargar el script.sh (comentado de momento)
-  # user_data = file("script.sh")
-
-  tags = {
-    Name = "sgbd-secundario_zona2"
-  }
-}
-
 # Launch Template para Jitsi en Zona 1
 resource "aws_launch_template" "jitsi_zona1" {
   name_prefix   = "jitsi-zona1-"
