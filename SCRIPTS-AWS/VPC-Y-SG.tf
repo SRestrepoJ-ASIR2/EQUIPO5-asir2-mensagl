@@ -405,4 +405,3 @@ resource "aws_security_group" "sg_jitsi" {
     Name = "sg_jitsi"
   }
 }
-

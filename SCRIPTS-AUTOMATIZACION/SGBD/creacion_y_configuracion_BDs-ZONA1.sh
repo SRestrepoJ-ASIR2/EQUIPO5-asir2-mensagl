@@ -27,7 +27,7 @@ if [ "$(hostname)" == "sgbd-principal_zona1" ]; then
     mysql -u root -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'%';"
     mysql -u root -e "FLUSH PRIVILEGES;"
 
-    # Crear usuario de replicación
+    # Crear usuario de replicacion
     mysql -u root -e "CREATE USER '${REPL_USER}'@'${SECONDARY_DB_IP}' IDENTIFIED BY '${REPL_PASSWORD}';"
     mysql -u root -e "GRANT REPLICATION SLAVE ON *.* TO '${REPL_USER}'@'${SECONDARY_DB_IP}';"
     mysql -u root -e "FLUSH PRIVILEGES;"
@@ -46,14 +46,14 @@ fi
 
 # Configurar la base de datos secundaria (réplica)
 if [ "$(hostname)" == "sgbd-secundario_zona1" ]; then
-    # Detener la replicación si ya está configurada
+    # Detener la replicacion si ya está configurada
     mysql -u root -e "STOP SLAVE;"
 
-    # Configurar la replicación
+    # Configurar la replicacion
     mysql -u root -e "CHANGE MASTER TO MASTER_HOST='${PRIMARY_DB_IP}', MASTER_USER='${REPL_USER}', MASTER_PASSWORD='${REPL_PASSWORD}', MASTER_LOG_FILE='${BINLOG_FILE}', MASTER_LOG_POS=${BINLOG_POS};"
     mysql -u root -e "START SLAVE;"
 
-    # Verificar el estado de la replicación
+    # Verificar el estado de la replicacion
     SLAVE_STATUS=$(mysql -u root -e "SHOW SLAVE STATUS\G")
     echo "$SLAVE_STATUS"
 

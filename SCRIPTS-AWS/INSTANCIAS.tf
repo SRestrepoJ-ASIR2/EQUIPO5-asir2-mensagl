@@ -186,3 +186,6 @@ resource "aws_autoscaling_group" "cluster_jitsi" {
     propagate_at_launch = true
   }
 }
+
+
+
