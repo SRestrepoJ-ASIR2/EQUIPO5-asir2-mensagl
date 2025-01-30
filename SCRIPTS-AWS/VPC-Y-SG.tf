@@ -125,7 +125,7 @@ resource "aws_route_table" "public" {
   }
 }
 
-# Asociar subnets públicas a la tabla de rutas pública
+# Asociar subnets publicas a la tabla de rutas publica
 resource "aws_route_table_association" "assoc_public1" {
   subnet_id      = aws_subnet.public1.id
   route_table_id = aws_route_table.public.id
@@ -198,7 +198,7 @@ resource "aws_route_table_association" "assoc_private2" {
 # Grupo de seguridad para los Proxy Inversos
 resource "aws_security_group" "sg_proxy" {
   name        = "sg_proxy_inverso"
-  description = "Security group for reverse proxy servers"
+  description = "SG para el proxy inverso"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -237,7 +237,7 @@ resource "aws_security_group" "sg_proxy" {
 # Grupo de seguridad para el CMS
 resource "aws_security_group" "sg_cms" {
   name        = "sg_cms"
-  description = "Security group for CMS cluster"
+  description = "SG para el cluster CMS"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -283,7 +283,7 @@ resource "aws_security_group" "sg_cms" {
 # Grupo de seguridad para MySQL
 resource "aws_security_group" "sg_mysql" {
   name        = "sg_mysql"
-  description = "Security group for MySQL servers"
+  description = "SG para servidores MySQL"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -312,10 +312,10 @@ resource "aws_security_group" "sg_mysql" {
   }
 }
 
-# Grupo de seguridad para Mensajeria (XMPP Openfire + MySQL)
+# Grupo de seguridad para Mensajeria (XMPP Prosody + MySQL)
 resource "aws_security_group" "sg_mensajeria" {
   name        = "sg_mensajeria"
-  description = "Security group for XMPP Openfire and MySQL"
+  description = "SG para XMPP Prosody y MySQL"
   vpc_id      = aws_vpc.main.id
 
   # SSH
@@ -326,7 +326,7 @@ resource "aws_security_group" "sg_mensajeria" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # XMPP Openfire (puertos predeterminados)
+  # XMPP Prosody (puertos predeterminados)
   ingress {
     from_port   = 5222
     to_port     = 5222
