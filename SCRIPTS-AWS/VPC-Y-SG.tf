@@ -301,21 +301,29 @@ resource "aws_security_group" "sg_mysql" {
     cidr_blocks = ["0.0.0.0/0"]
   }
  
-  # MySQL (replicación entre instancias en la misma zona)
+   # MySQL entre instancias del mismo security group
   ingress {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = [aws_subnet.private1.cidr_block]  # Solo permite tráfico desde la subred privada de la Zona 1
+    self        = true # Permite tráfico entre instancias con este SG
   }
- 
+
+  # MySQL desde aplicaciones en private1 
   ingress {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = [aws_subnet.private2.cidr_block]  # Solo permite tráfico desde la subred privada de la Zona 2
+    cidr_blocks = [aws_subnet.private1.cidr_block]
   }
- 
+ # MySQL desde aplicaciones en private2
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = [aws_subnet.private2.cidr_block]
+  }
+
   # Tráfico de salida
   egress {
     from_port   = 0
@@ -323,7 +331,7 @@ resource "aws_security_group" "sg_mysql" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
+
   tags = {
     Name = "sg_mysql"
   }
