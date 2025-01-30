@@ -49,13 +49,18 @@ resource "aws_instance" "sgbd-principal_zona1" {
   vpc_security_group_ids = [aws_security_group.sg_mysql.id]
   private_ip             = "10.0.3.10"
 
-  # User Data para cargar el script.sh (comentado de momento)
-  # ser_data = file("\SCRIPTS-AUTOMATIZACION\SGBD\creacion_y_configuracion_BDs-ZONA1.sh")
+  # User Data con variables para el script
+  user_data = base64encode(templatefile("${path.module}/SCRIPTS-AUTOMATIZACION/SGBD/creacion_y_configuracion_BDs-ZONA1.sh", {
+    role           = "primary",          # Rol: primary
+    primary_ip     = "10.0.3.10",        # IP del primario
+    secondary_ip   = "10.0.3.11"         # IP del secundario
+  }))
 
   tags = {
     Name = "sgbd-principal_zona1"
   }
 }
+
 # Secundario
 resource "aws_instance" "sgbd-secundario_zona1" {
   ami                    = "ami-04b4f1a9cf54c11d0"
@@ -65,8 +70,12 @@ resource "aws_instance" "sgbd-secundario_zona1" {
   vpc_security_group_ids = [aws_security_group.sg_mysql.id]
   private_ip             = "10.0.3.11"
 
-  # User Data para cargar el script.sh (comentado de momento)
-  # user_data = file("script.sh")
+  # User Data con variables para el script
+  user_data = base64encode(templatefile("${path.module}/SCRIPTS-AUTOMATIZACION/SGBD/creacion_y_configuracion_BDs-ZONA1.sh", {
+    role           = "secondary",        # Rol: secondary
+    primary_ip     = "10.0.3.10",        # IP del primario
+    secondary_ip   = "10.0.3.11"         # IP del secundario
+  }))
 
   tags = {
     Name = "sgbd-secundario_zona1"
@@ -112,8 +121,7 @@ resource "aws_instance" "mensajeria_2" {
   }
 }
 
-
-# instancia RDS - para CMS
+# RDS
 # Subnet Group para RDS (solo subred privada 4 - 10.0.4.0/24)
 resource "aws_db_subnet_group" "cms_subnet_group" {
   name       = "cms-db-subnet-group"
