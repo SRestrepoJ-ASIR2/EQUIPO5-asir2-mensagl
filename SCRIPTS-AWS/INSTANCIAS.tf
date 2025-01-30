@@ -128,12 +128,12 @@ resource "aws_db_subnet_group" "cms_subnet_group" {
 resource "aws_db_instance" "cms_database" {
   allocated_storage    = 20
   storage_type         = "gp2"
-  instance_class       = "db.t3.micro"
+  instance_class       = "db.t3.medium"
   engine               = "mysql"
   engine_version       = "8.0"
   username             = "admin"
   password             = "Admin123"
-  db_name              = "wordpress-db"
+  db_name              = "cmsdb"
   publicly_accessible  = false
   multi_az             = false
   availability_zone    = "us-east-1b"  # Zona de la subred private2 (10.0.4.0/24)
@@ -144,7 +144,7 @@ resource "aws_db_instance" "cms_database" {
   skip_final_snapshot  = true  # Solo para entornos de prueba
 
   tags = {
-    Name = "wordpress-db"
+    Name = "cms-db"
   }
 
   depends_on = [aws_db_subnet_group.cms_subnet_group]
