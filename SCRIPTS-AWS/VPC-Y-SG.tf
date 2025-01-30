@@ -335,15 +335,7 @@ resource "aws_security_group" "sg_mensajeria" {
   description = "SG para XMPP Prosody y MySQL"
   vpc_id      = aws_vpc.main.id
 
-  # SSH
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # XMPP Prosody (puertos predeterminados)
+  # XMPP Prosody - Cliente a Servidor
   ingress {
     from_port   = 5222
     to_port     = 5222
@@ -351,14 +343,15 @@ resource "aws_security_group" "sg_mensajeria" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Comunicación interna entre Jitsi y Prosody
   ingress {
-    from_port   = 9090
-    to_port     = 9091
+    from_port   = 5347
+    to_port     = 5347
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # MySQL
+  # MySQL (Base de datos para Prosody)
   ingress {
     from_port   = 3306
     to_port     = 3306
@@ -366,7 +359,7 @@ resource "aws_security_group" "sg_mensajeria" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Trafico de salida
+  # Trafico de salida sin restricciones
   egress {
     from_port   = 0
     to_port     = 0
@@ -378,3 +371,38 @@ resource "aws_security_group" "sg_mensajeria" {
     Name = "sg_mensajeria"
   }
 }
+
+resource "aws_security_group" "sg_jitsi" {
+  name        = "sg_jitsi"
+  description = "SG para Jitsi Meet y Videobridge"
+  vpc_id      = aws_vpc.main.id
+
+  # WebRTC - Comunicación de audio/video (UDP obligatorio)
+  ingress {
+    from_port   = 10000
+    to_port     = 10000
+    protocol    = "udp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Comunicación interna con Prosody 
+  ingress {
+    from_port   = 5347
+    to_port     = 5347
+    protocol    = "tcp"
+    security_groups = [aws_security_group.sg_mensajeria.id]  # Permitir solo desde Prosody
+  }
+
+  # Trafico de salida sin restricciones
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "sg_jitsi"
+  }
+}
+

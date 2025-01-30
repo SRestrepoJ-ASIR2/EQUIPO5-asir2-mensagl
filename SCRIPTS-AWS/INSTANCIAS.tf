@@ -77,8 +77,9 @@ resource "aws_autoscaling_group" "cluster_mensajeria" {
   }
 }
 
-# Servidor SGBD en Zona 1
-resource "aws_instance" "sgbd_zona1" {
+# Servidores SGBD en Zona 1
+# Principal
+resource "aws_instance" "sgbd-principal_zona1" {
   ami                    = "ami-04b4f1a9cf54c11d0"
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.private1.id
@@ -89,10 +90,24 @@ resource "aws_instance" "sgbd_zona1" {
   # user_data = file("script.sh")
 
   tags = {
-    Name = "sgbd-zona1"
+    Name = "sgbd-principal_zona1"
   }
 }
+# Secundario
+resource "aws_instance" "sgbd-secundario_zona1" {
+  ami                    = "ami-04b4f1a9cf54c11d0"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.private1.id
+  key_name               = aws_key_pair.ssh_key.key_name
+  vpc_security_group_ids = [aws_security_group.sg_mysql.id]
 
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
+
+  tags = {
+    Name = "sgbd-secundario_zona1"
+  }
+}
 
 # Plantilla de lanzamiento para el Cluster de CMS en Zona 2
 resource "aws_launch_template" "cms_zona2" {
@@ -133,8 +148,9 @@ resource "aws_autoscaling_group" "cluster_cms" {
   }
 }
 
-# Servidor SGBD en Zona 2
-resource "aws_instance" "sgbd_zona2" {
+# Servidores SGBD en Zona 2
+# Principal
+resource "aws_instance" "sgbd-principal_zona2" {
   ami                    = "ami-04b4f1a9cf54c11d0"
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.private2.id
@@ -145,6 +161,61 @@ resource "aws_instance" "sgbd_zona2" {
   # user_data = file("script.sh")
 
   tags = {
-    Name = "sgbd-zona2"
+    Name = "sgbd-principal_zona2"
+  }
+}
+
+# Secundario
+resource "aws_instance" "sgbd-secundario_zona2" {
+  ami                    = "ami-04b4f1a9cf54c11d0"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.private2.id
+  key_name               = aws_key_pair.ssh_key.key_name
+  vpc_security_group_ids = [aws_security_group.sg_mysql.id]
+
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
+
+  tags = {
+    Name = "sgbd-secundario_zona2"
+  }
+}
+
+# Launch Template para Jitsi en Zona 1
+resource "aws_launch_template" "jitsi_zona1" {
+  name_prefix   = "jitsi-zona1-"
+  image_id      = "ami-04b4f1a9cf54c11d0"  
+  instance_type = "t2.micro"
+  key_name      = aws_key_pair.ssh_key.key_name
+  vpc_security_group_ids = [aws_security_group.sg_jitsi.id] 
+  
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      Name = "jitsi-zona1"
+    }
+  }
+}
+
+# Auto Scaling Group para el Cluster de Jitsi (2 instancias en Zona 1)
+resource "aws_autoscaling_group" "cluster_jitsi" {
+  name             = "cluster-jitsi-zona1"
+  desired_capacity = 2
+  min_size         = 2
+  max_size         = 2
+  vpc_zone_identifier = [aws_subnet.private1.id]  # 
+
+  launch_template {
+    id      = aws_launch_template.jitsi_zona1.id
+    version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "jitsi-cluster"
+    propagate_at_launch = true
   }
 }
