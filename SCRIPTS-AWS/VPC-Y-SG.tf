@@ -413,3 +413,19 @@ resource "aws_security_group" "sg_jitsi" {
     Name = "sg_jitsi"
   }
 }
+
+
+resource "aws_security_group" "sg_rds_mysql" {
+  name        = "sg_rds_mysql"
+  description = "SG para el RDS del CMS"
+  vpc_id      = aws_vpc.main.id
+ ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = "sg_rds"
+  }
+}

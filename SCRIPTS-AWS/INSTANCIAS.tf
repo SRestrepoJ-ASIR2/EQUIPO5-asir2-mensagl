@@ -18,6 +18,13 @@ resource "aws_instance" "proxy_zona1" {
   tags = {
     Name = "proxy-zona1"
   }
+
+  depends_on = [
+    aws_vpc.main,
+    aws_subnet.public1,
+    aws_security_group.sg_proxy,
+    aws_key_pair.ssh_key
+  ]
 }
 
 # Proxy Inverso en Zona 2
@@ -36,6 +43,13 @@ resource "aws_instance" "proxy_zona2" {
   tags = {
     Name = "proxy-zona2"
   }
+
+  depends_on = [
+    aws_vpc.main,
+    aws_subnet.public2,
+    aws_security_group.sg_proxy,
+    aws_key_pair.ssh_key
+  ]
 }
 
 # Servidores SGBD en Zona 1
@@ -48,21 +62,30 @@ resource "aws_instance" "sgbd-principal_zona1" {
   vpc_security_group_ids = [aws_security_group.sg_mysql.id]
   private_ip             = "10.0.3.10"
 
-  # User Data con variables para el script
+  # User data con el script de configuración
   user_data = base64encode(templatefile("${path.module}/SCRIPTS-AUTOMATIZACION/SGBD/creacion_y_configuracion_BDs-ZONA1.sh", {
-    role           = "primary",          # Rol: primary
-    primary_ip     = "10.0.3.10",        # IP del primario
-    secondary_ip   = "10.0.3.11",        # IP del secundario
-    db_user        = "admin",            # Usuario de la base de datos
-    db_password    = "Admin123",         # Contraseña del usuario
-    db_name        = "prosody",          # Nombre de la base de datos
-    repl_user      = "replica_user",     # Usuario de replicación
-    repl_password  = "Admin123"          # Contraseña de replicación
+    role           = "primary",
+    primary_ip     = "10.0.3.10",
+    secondary_ip   = "10.0.3.11",
+    db_user        = "admin",
+    db_password    = "Admin123",
+    db_name        = "prosody",
+    repl_user      = "replica_user",
+    repl_password  = "Admin123",
+    ssh_key_name   = aws_key_pair.ssh_key.key_name,
+    private_key    = tls_private_key.ssh_key.private_key_pem  # Clave privada (nombre corregido)
   }))
 
   tags = {
     Name = "sgbd-principal_zona1"
   }
+
+  depends_on = [
+    aws_vpc.main,
+    aws_subnet.private1,
+    aws_security_group.sg_mysql,
+    aws_key_pair.ssh_key
+  ]
 }
 
 # Secundario
@@ -76,19 +99,28 @@ resource "aws_instance" "sgbd-secundario_zona1" {
 
   # User Data con variables para el script
   user_data = base64encode(templatefile("${path.module}/SCRIPTS-AUTOMATIZACION/SGBD/creacion_y_configuracion_BDs-ZONA1.sh", {
-    role           = "secondary",        # Rol: secondary
-    primary_ip     = "10.0.3.10",        # IP del primario
-    secondary_ip   = "10.0.3.11",        # IP del secundario
-    db_user        = "admin",            # Usuario de la base de datos
-    db_password    = "Admin123",         # Contraseña del usuario
-    db_name        = "prosody",          # Nombre de la base de datos
-    repl_user      = "replica_user",     # Usuario de replicación
-    repl_password  = "Admin123"          # Contraseña de replicación
+    role           = "secondary",
+    primary_ip     = "10.0.3.10",
+    secondary_ip   = "10.0.3.11",
+    db_user        = "admin",
+    db_password    = "Admin123",
+    db_name        = "prosody",
+    repl_user      = "replica_user",
+    repl_password  = "Admin123",
+    ssh_key_name   = aws_key_pair.ssh_key.key_name,
+    private_key    = tls_private_key.ssh_key.private_key_pem  
   }))
 
   tags = {
     Name = "sgbd-secundario_zona1"
   }
+
+  depends_on = [
+    aws_vpc.main,
+    aws_subnet.private1,
+    aws_security_group.sg_mysql,
+    aws_key_pair.ssh_key
+  ]
 }
 
 # ============================
@@ -110,6 +142,13 @@ resource "aws_instance" "mensajeria_1" {
   tags = {
     Name = "mensajeria-1"
   }
+
+  depends_on = [
+    aws_vpc.main,
+    aws_subnet.private1,
+    aws_security_group.sg_mensajeria,
+    aws_key_pair.ssh_key
+  ]
 }
 
 # Instancia Mensajería 2 en Zona 1
@@ -121,15 +160,20 @@ resource "aws_instance" "mensajeria_2" {
   vpc_security_group_ids = [aws_security_group.sg_mensajeria.id]
   private_ip             = "10.0.3.30"  # IP privada fija
 
-
   # User Data para cargar el script.sh (comentado de momento)
   # user_data = file("script.sh")
 
   tags = {
     Name = "mensajeria-2"
   }
-}
 
+  depends_on = [
+    aws_vpc.main,
+    aws_subnet.private1,
+    aws_security_group.sg_mensajeria,
+    aws_key_pair.ssh_key
+  ]
+}
 # APARTADO RDS
 
 # # RDS
@@ -184,6 +228,13 @@ resource "aws_instance" "cms_cluster_1" {
   tags = {
     Name = "cms-cluster-1"
   }
+
+  depends_on = [
+    aws_vpc.main,
+    aws_subnet.private2,
+    aws_security_group.sg_cms,
+    aws_key_pair.ssh_key
+  ]
 }
 
 resource "aws_instance" "cms_cluster_2" {
@@ -200,8 +251,16 @@ resource "aws_instance" "cms_cluster_2" {
   tags = {
     Name = "cms-cluster-2"
   }
+
+  depends_on = [
+    aws_vpc.main,
+    aws_subnet.private2,
+    aws_security_group.sg_cms,
+    aws_key_pair.ssh_key
+  ]
 }
-# Jiti - para videollamadas
+
+# Jitsi - para videollamadas
 resource "aws_instance" "jitsi_cluster1" {
   ami                    = "ami-04b4f1a9cf54c11d0"
   instance_type          = "t2.micro"
@@ -216,4 +275,11 @@ resource "aws_instance" "jitsi_cluster1" {
   tags = {
     Name = "jitsi-zona1"
   }
+
+  depends_on = [
+    aws_vpc.main,
+    aws_subnet.private1,
+    aws_security_group.sg_jitsi,
+    aws_key_pair.ssh_key
+  ]
 }
