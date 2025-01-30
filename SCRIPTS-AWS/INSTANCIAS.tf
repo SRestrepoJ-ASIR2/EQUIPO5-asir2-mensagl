@@ -143,7 +143,7 @@ resource "aws_db_instance" "cms_database" {
   password             = "Admin123"
   db_name              = "wordpress-db"
   publicly_accessible  = false
-  multi_az             = false
+  multi_az             = true
   availability_zone    = "us-east-1b"  # Zona de la subred private2 (10.0.4.0/24)
   db_subnet_group_name = aws_db_subnet_group.cms_subnet_group.name
   vpc_security_group_ids = [aws_security_group.sg_mysql.id]
