@@ -9,6 +9,8 @@ resource "aws_instance" "proxy_zona1" {
   subnet_id              = aws_subnet.public1.id
   key_name               = aws_key_pair.ssh_key.key_name
   vpc_security_group_ids = [aws_security_group.sg_proxy.id]
+  associate_public_ip_address = true
+  private_ip             = "10.0.1.10"
 
   # User Data para cargar el script.sh (comentado de momento)
   # user_data = file("script.sh")
@@ -25,12 +27,49 @@ resource "aws_instance" "proxy_zona2" {
   subnet_id              = aws_subnet.public2.id
   key_name               = aws_key_pair.ssh_key.key_name
   vpc_security_group_ids = [aws_security_group.sg_proxy.id]
+  associate_public_ip_address = true
+  private_ip             = "10.0.2.10"
 
   # User Data para cargar el script.sh (comentado de momento)
   # user_data = file("script.sh")
 
   tags = {
     Name = "proxy-zona2"
+  }
+}
+
+
+# Servidores SGBD en Zona 1
+# Principal
+resource "aws_instance" "sgbd-principal_zona1" {
+  ami                    = "ami-04b4f1a9cf54c11d0"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.private1.id
+  key_name               = aws_key_pair.ssh_key.key_name
+  vpc_security_group_ids = [aws_security_group.sg_mysql.id]
+  private_ip             = "10.0.3.10"
+
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
+
+  tags = {
+    Name = "sgbd-principal_zona1"
+  }
+}
+# Secundario
+resource "aws_instance" "sgbd-secundario_zona1" {
+  ami                    = "ami-04b4f1a9cf54c11d0"
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.private1.id
+  key_name               = aws_key_pair.ssh_key.key_name
+  vpc_security_group_ids = [aws_security_group.sg_mysql.id]
+  private_ip             = "10.0.3.11"
+
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
+
+  tags = {
+    Name = "sgbd-secundario_zona1"
   }
 }
 
@@ -77,37 +116,39 @@ resource "aws_autoscaling_group" "cluster_mensajeria" {
   }
 }
 
-# Servidores SGBD en Zona 1
-# Principal
-resource "aws_instance" "sgbd-principal_zona1" {
-  ami                    = "ami-04b4f1a9cf54c11d0"
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.private1.id
-  key_name               = aws_key_pair.ssh_key.key_name
+# instancia RDS - para CMS
+resource "aws_db_instance" "cms_database" {
+  allocated_storage    = 20
+  storage_type         = "gp2"
+  instance_class       = "db.t3.micro"
+  engine               = "mysql"
+  engine_version       = "8.0"
+  username             = "admin"
+  password             = "Admin123"
+  db_name              = "cmsdb"
+  publicly_accessible  = false
+  multi_az             = false
+  availability_zone    = "us-east-1a"
+  db_subnet_group_name = aws_db_subnet_group.cms_subnet_group.name
   vpc_security_group_ids = [aws_security_group.sg_mysql.id]
 
-  # User Data para cargar el script.sh (comentado de momento)
-  # user_data = file("script.sh")
+  tags = {
+    Name = "cms-db"
+  }
+
+  depends_on = [aws_db_subnet_group.cms_subnet_group]
+}
+
+# Subnet Group para RDS
+resource "aws_db_subnet_group" "cms_subnet_group" {
+  name       = "cms-db-subnet-group"
+  subnet_ids = [aws_subnet.private1.id, aws_subnet.private2.id]
 
   tags = {
-    Name = "sgbd-principal_zona1"
+    Name = "cms-db-subnet-group"
   }
 }
-# Secundario
-resource "aws_instance" "sgbd-secundario_zona1" {
-  ami                    = "ami-04b4f1a9cf54c11d0"
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.private1.id
-  key_name               = aws_key_pair.ssh_key.key_name
-  vpc_security_group_ids = [aws_security_group.sg_mysql.id]
 
-  # User Data para cargar el script.sh (comentado de momento)
-  # user_data = file("script.sh")
-
-  tags = {
-    Name = "sgbd-secundario_zona1"
-  }
-}
 
 # Plantilla de lanzamiento para el Cluster de CMS en Zona 2
 resource "aws_launch_template" "cms_zona2" {
@@ -173,7 +214,7 @@ resource "aws_autoscaling_group" "cluster_jitsi" {
   desired_capacity = 2
   min_size         = 2
   max_size         = 2
-  vpc_zone_identifier = [aws_subnet.private1.id]  # 
+  vpc_zone_identifier = [aws_subnet.private1.id]
 
   launch_template {
     id      = aws_launch_template.jitsi_zona1.id
@@ -186,6 +227,4 @@ resource "aws_autoscaling_group" "cluster_jitsi" {
     propagate_at_launch = true
   }
 }
-
-
 

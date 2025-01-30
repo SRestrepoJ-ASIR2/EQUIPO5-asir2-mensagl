@@ -2,12 +2,12 @@
 
 # Variables
 DB_USER="admin"
-DB_PASSWORD="password"
-DB_NAME="mensajeria"
+DB_PASSWORD="Admin123"
+DB_NAME="prosody"
 REPL_USER="replica_user"
-REPL_PASSWORD="replica_password"
+REPL_PASSWORD="Admin123"
 PRIMARY_DB_IP="10.0.3.10"  # IP de la base de datos principal
-SECONDARY_DB_IP="10.0.3.20"  # IP de la base de datos secundaria
+SECONDARY_DB_IP="10.0.3.11"  # IP de la base de datos secundaria
 
 # Instalar MySQL Server
 sudo apt-get update
