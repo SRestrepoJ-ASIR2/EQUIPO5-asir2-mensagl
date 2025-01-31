@@ -4,7 +4,7 @@
 variable "nombre_alumno" {
   description = "Nombre para nombrar los recursos"
   type        = string
-  default     = "nombreAlumno"  # Cambiar al nombre del estudiante
+  default     = "equipo5"  # Cambiar al nombre del estudiante
 }
 
 # ============================

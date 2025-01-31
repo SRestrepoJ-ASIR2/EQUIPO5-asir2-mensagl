@@ -2,56 +2,55 @@
 # Instancias EC2
 # ============================
 
-# Proxy Inverso en Zona 1
-resource "aws_instance" "proxy_zona1" {
-  ami                    = "ami-04b4f1a9cf54c11d0"
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.public1.id
-  key_name               = aws_key_pair.ssh_key.key_name
-  vpc_security_group_ids = [aws_security_group.sg_proxy.id]
-  associate_public_ip_address = true
-  private_ip             = "10.0.1.10"
+# # Proxy Inverso en Zona 1
+# resource "aws_instance" "proxy_zona1" {
+#   ami                    = "ami-04b4f1a9cf54c11d0"
+#   instance_type          = "t2.micro"
+#   subnet_id              = aws_subnet.public1.id
+#   key_name               = aws_key_pair.ssh_key.key_name
+#   vpc_security_group_ids = [aws_security_group.sg_proxy.id]
+#   associate_public_ip_address = true
+#   private_ip             = "10.0.1.10"
 
-  # User Data para cargar el script.sh
-  user_data = templatefile("${path.module}/SCRIPTS-AUTOMATIZACION/PROXY/proxy-zona1_sin_cluster.sh", {})
+#   # User Data para cargar el script.sh (comentado de momento)
+#   # user_data = file("script.sh")
 
-  tags = {
-    Name = "proxy-zona1"
-  }
+#   tags = {
+#     Name = "proxy-zona1"
+#   }
 
-  depends_on = [
-    aws_vpc.main,
-    aws_subnet.public1,
-    aws_security_group.sg_proxy,
-    aws_key_pair.ssh_key
-  ]
-}
+#   depends_on = [
+#     aws_vpc.main,
+#     aws_subnet.public1,
+#     aws_security_group.sg_proxy,
+#     aws_key_pair.ssh_key
+#   ]
+# }
 
-# Proxy Inverso en Zona 2
-resource "aws_instance" "proxy_zona2" {
-  ami                    = "ami-04b4f1a9cf54c11d0"
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.public2.id
-  key_name               = aws_key_pair.ssh_key.key_name
-  vpc_security_group_ids = [aws_security_group.sg_proxy.id]
-  associate_public_ip_address = true
-  private_ip             = "10.0.2.10"
+# # Proxy Inverso en Zona 2
+# resource "aws_instance" "proxy_zona2" {
+#   ami                    = "ami-04b4f1a9cf54c11d0"
+#   instance_type          = "t2.micro"
+#   subnet_id              = aws_subnet.public2.id
+#   key_name               = aws_key_pair.ssh_key.key_name
+#   vpc_security_group_ids = [aws_security_group.sg_proxy.id]
+#   associate_public_ip_address = true
+#   private_ip             = "10.0.2.10"
 
-  # User Data para cargar el script.sh
-  user_data = templatefile("${path.module}/SCRIPTS-AUTOMATIZACION/PROXY/proxy-zona2_sin_cluster.sh", {})
+#   # User Data para cargar el script.sh (comentado de momento)
+#   # user_data = file("script.sh")
 
-  tags = {
-    Name = "proxy-zona2"
-  }
+#   tags = {
+#     Name = "proxy-zona2"
+#   }
 
-  depends_on = [
-    aws_vpc.main,
-    aws_subnet.public2,
-    aws_security_group.sg_proxy,
-    aws_key_pair.ssh_key
-  ]
-}
-
+#   depends_on = [
+#     aws_vpc.main,
+#     aws_subnet.public2,
+#     aws_security_group.sg_proxy,
+#     aws_key_pair.ssh_key
+#   ]
+# }
 
 # # Servidores SGBD en Zona 1
 # # Principal
@@ -221,6 +220,7 @@ resource "aws_instance" "mensajeria_1" {
 
 #   depends_on = [aws_db_subnet_group.cms_subnet_group]
 # }
+
 # Cluster de CMS (2 instancias en Zona 2)
 resource "aws_instance" "cms_cluster_1" {
   ami                    = "ami-04b4f1a9cf54c11d0"
@@ -230,19 +230,8 @@ resource "aws_instance" "cms_cluster_1" {
   vpc_security_group_ids = [aws_security_group.sg_cms.id]
   private_ip             = "10.0.4.10"  # IP privada fija
 
-  # User Data para cargar el script.sh
-  user_data = base64encode(templatefile("${path.module}/SCRIPTS-AUTOMATIZACION/CMS/CMS_SIN_TLS.sh", {
-    db_name   = "Admin123",
-    db_user   = "admin",
-    db_pass   = "_Admin123",
-    db_host   = "10.0.4.10",
-    db_prefix = "wp_",
-    site_url  = "http://10.0.4.100",
-    site_title = "PRUEBA_SITIO",
-    admin_user = "admin",
-    admin_password = "Admin123",
-    admin_email = "retoequipo5@gmail.com"
-  }))
+  # User Data para cargar el script.sh (comentado de momento)
+  # user_data = file("script.sh")
 
   tags = {
     Name = "cms-cluster-1"
@@ -255,7 +244,6 @@ resource "aws_instance" "cms_cluster_1" {
     aws_key_pair.ssh_key
   ]
 }
-
 #################################                              
 # DESCOMENTAR / ARREGLAR CLUSTER#                             
 #                               #
